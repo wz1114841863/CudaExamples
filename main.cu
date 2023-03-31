@@ -1,9 +1,14 @@
 // #include "vectorAdd.cu"
-#include "vectorAddUniMem.cu"
+// #include "vectorAddUniMem.cu"
+// #include "matrixMul.cu"
+// #include "matrixMulSharedMem.cu"
+// #include "simpleAssert.cu"
 
-int main() {
+int main(int argc, char **argv) {
     // vectorAdd
     // vectorAddMain();
-    vectorAddUniMemMain();
+    // matrixMulMain();
+    // matrixMulSharedMemMain(argc, argv);
+    // simpleAssertMain(argc, argv);
     return 0;
 }

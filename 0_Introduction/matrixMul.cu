@@ -6,20 +6,21 @@
 #include "helper_cuda.h"
 
 // Matrix multiplication (CUDA Kernel) on the device: C = A * B
-template <int BLOCK_SIZE>
-__global__ void MatrixMulCUDA(float *C, float *A, float *B, int wA, int wB) {
-    // Block index
-    int bx = blockIdx.x;
-    int by = blockIdx.y;
+__global__ void MatrixMulCUDA(float *C, float *A, float *B, int m, int n, int k) {
+    // Each thread computes an element in the C matrix
+    float Cvalue = 0.0f;
+    int col = blockIdx.x * blockDim.x + threadIdx.x;
+    int row = blockIdx.y * blockDim.y + threadIdx.y;
 
-    // Thread index
-    int tx = threadIdx.x;
-    int ty = threadIdx.y;
+    // Take values in the for loop, taking each row of A and each column of B
+    for (int i = 0; i < k; ++i) {
+        Cvalue += A[row * k + i] * B[i * n + col];
+    }
 
-    // Index of the first sub_matrix
-
+    C[row * n + col] = Cvalue;
 }
 
+// initialzie use constant value
 void ConstantInit(float *data, int size, float val) {
     for (int i = 0; i < size; ++i) {
         data[i] = val;
@@ -40,9 +41,6 @@ int MatrixMultiply(int argc, char **argv,
     float *h_B;
     checkCudaErrors(cudaMallocHost(&h_B, mem_size_B));
 
-    // cuds stream
-    cudaStream_t stream;
-
     // initialize host memory
     const float valB = 0.01f;
     ConstantInit(h_A, size_A, 1.0f);
@@ -61,16 +59,12 @@ int MatrixMultiply(int argc, char **argv,
 
     // Allocate device memory
     float *d_A, *d_B, *d_C;
-
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_A), mem_size_A));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_B), mem_size_B));
     checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_C), mem_size_C));
 
-    // Allocate CUDA events that we'll use for timing
-    cudaEvent_t start, stop;
-    checkCudaErrors(cudaEventCreate(&start));
-    checkCudaErrors(cudaEventCreate(&stop));
-
+    // cuds stream
+    cudaStream_t stream;
     checkCudaErrors(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
 
     // copy host mem to device
@@ -85,20 +79,69 @@ int MatrixMultiply(int argc, char **argv,
 
     // create and start timer
     printf("Computing result using CUDA Kernel...\n");
-
-    // Performs warmup operation using matrixMul CUDA kernel
-    if (block_size == 16) {
-        MatrixMulCUDA<16>
-        <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-    }else {
-        MatrixMulCUDA<32>
-        <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-    }
+    MatrixMulCUDA<<<grid, threads, 0, stream >>> (d_C, d_A, d_B, dimsA.y, dimsB.x, dimsA.x);
 
     printf("done \n");
     checkCudaErrors(cudaStreamSynchronize(stream));
 
-    // Record the start event
-    checkCudaErrors(cudaEventRecord(start, stream))
+    // copy result from device to host
+    checkCudaErrors(cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
+    checkCudaErrors(cudaStreamSynchronize(stream));
 
+    printf("Checking computed result for correctness: ");
+    bool correct = true;
+
+    // check result
+    double eps = 1.e-6;  // machine zero
+
+    for (int i = 0; i < static_cast<int>(dimsC.x * dimsC.y); i++) {
+        double abs_err = fabs(h_C[i] - (dimsB.y * valB));
+        double dot_length = dimsB.y;
+        double abs_val = fabs(h_C[i]);
+        double rel_err = abs_err / abs_val / dot_length;
+
+        if (rel_err > eps) {
+            printf("Error! Matrix[%05d]=%.8f, ref=%.8f error term is > %E\n",
+                   i, h_C[i], dimsB.y * valB, eps);
+            correct = false;
+        }
+    }
+    printf("%s\n", correct ? "Result = PASS" : "Result = FAIL");
+
+
+    // Clean up memory
+    checkCudaErrors(cudaFreeHost(h_A));
+    checkCudaErrors(cudaFreeHost(h_B));
+    checkCudaErrors(cudaFreeHost(h_C));
+    checkCudaErrors(cudaFree(d_A));
+    checkCudaErrors(cudaFree(d_B));
+    checkCudaErrors(cudaFree(d_C));
+    return 1;
+}
+
+int matrixMulMain(int argc, char **argv) {
+    printf("[Matrix Multiply Using CUDA] - Starting...\n");
+
+    // select device ID
+    int dev = findCudaDevice(argc, (const char **)argv);
+    int block_size = 32;
+
+    dim3 dimsA(2 * block_size, 2 * block_size, 1);
+    dim3 dimsB(4 * block_size, 2 * block_size, 1);
+
+
+    if (dimsA.x != dimsB.y) {
+        printf("Error: outer matrix dimensions must be equal. (%d != %d)\n",
+               dimsA.x, dimsB.y);
+        exit(EXIT_FAILURE);
+    }
+
+    printf("MatrixA(%d,%d), MatrixB(%d,%d)\n", dimsA.x, dimsA.y,
+           dimsB.x, dimsB.y);
+
+    checkCudaErrors(cudaProfilerStart());
+    int matrix_result = MatrixMultiply(argc, argv, block_size, dimsA, dimsB);
+    checkCudaErrors(cudaProfilerStop());
+
+    exit(matrix_result);
 }
