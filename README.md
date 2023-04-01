@@ -1,6 +1,7 @@
 cuda examples
 ```  
 01_Introduction:
+    helloWorl.cu
     vectorAdd.cu
     vectorAddUniMem.cu
     matrixMul.cu

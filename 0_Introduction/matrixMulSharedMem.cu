@@ -2,7 +2,6 @@
 #include <assert.h>
 #include <cuda_runtime.h>
 #include <cuda_profiler_api.h>
-#include "matrixMul.cu"
 #include "helper_functions.h"
 #include "helper_cuda.h"
 
@@ -56,6 +55,13 @@ __global__ void MatrixMulCUDASharedMem(float *C, float *A, float *B, int wA, int
     C[c + wB * ty + tx] = Csub;
 }
 
+// initialzie use constant value
+void constantInit(float *data, int size, float val) {
+    for (int i = 0; i < size; ++i) {
+        data[i] = val;
+    }
+}
+
 // Run a simple test of matrix multiplication using CUDA
 int MatrixMulSharedMem(int argc, char **argv,
                        int block_size, const dim3 &dimsA, const dim3 &dimsB) {
@@ -72,8 +78,8 @@ int MatrixMulSharedMem(int argc, char **argv,
 
     // initialize host memory
     const float valB = 0.01f;
-    ConstantInit(h_A, size_A, 1.0f);
-    ConstantInit(h_B, size_B, valB);
+    constantInit(h_A, size_A, 1.0f);
+    constantInit(h_B, size_B, valB);
 
     // Allocate host matrix C
     dim3 dimsC(dimsB.x, dimsA.y, 1);
