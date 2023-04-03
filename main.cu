@@ -5,6 +5,10 @@
 // #include "matrixMulSharedMem.cu"
 // #include "simpleAssert.cu"
 // #include "simpleAttributes.cu"
+// #include "mallocPitch.cu"
+// #include "malloc3D.cu"
+// #include "cudaMemory.cu"
+// #include "asyncAPI.cu"
 
 int main(int argc, char **argv) {
     // helloWorldMain();
@@ -14,5 +18,11 @@ int main(int argc, char **argv) {
     // matrixMulSharedMemMain(argc, argv);
     // simpleAssertMain(argc, argv);
     // simpleAttributesMain(argc, argv);
+    // mallocPitchMain();
+    // malloc3DMain();
+    // cudaMemoryMain();
+    // asyncAPImain(argc, argv);
+
+
     return 0;
 }

@@ -96,17 +96,54 @@ cudaCtxResetPersistingL2Cache：
 atmoicExch、atomicAdd:
     CUDA原子操作函数，它用于无条件地替换 / Add一个全局或共享内存中的32位或64位字，并返回原来的值
 ```
+mallocPitch:
+```  
+使用cudaMallocPitch()分配2D数组，确保分配被适当地填充以满足设备内存访问中描述的对齐要求，
+从而确保在访问行地址或在 2D 数组和其他区域设备内存之间执行复制时获得最佳性能
+API：
+cudaError_t cudaMallocPitch( void** devPtr，size_t* pitch，size_t widthInBytes，size_t height ):
+    向设备分配至少widthInBytes * height字节的线性存储器，并以*devPtr的形式返回指向所分配存储器的指针。
+    返回的间距（或步幅）必须用于访问数组元素,cudaMallocPitch在分配内存时，每行会多分配一些字节，
+    以保证widthofx*sizeof(元素)+多分配的字节是256的倍数(对齐)
+```
+malloc3D:
+```  
+使用cudaMalloc3D()分配2D数组，确保分配被适当地填充以满足设备内存访问中描述的对齐要求，
+从而确保在访问行地址或在 2D 数组和其他区域设备内存之间执行复制时获得最佳性能
+API:
+cudaExtent:
+    结构体，用于描述3D Array和3D线性内存在三个维度上的尺寸,cudaExtent可以用make_cudaExtent函数创建
+cudaPitchedPtr:
+    结构体，用于描述分配给GPU的线性内存的指针、间距、宽度和高度, cudaPitchedPtr可以用make_cudaPitchedPtr函数创建
+cudaMalloc3D:
+    用于在GPU中分配三维数组的内存。它可以保证分配的内存是对齐的，以提高内存访问的效率
+```
+cudaMemory:
+```  
+Runtime API访问全局变量的各种方法
+API:
+__constant__ 
+    声明内存为常量内存
+__device__:
+    在设备（device）中声明一个全局变量用__device__关键字修饰
+cudaGetSymbolAddress:
+    用于检索指向为全局内存空间中声明的变量分配的内存的地址
+cudaGetSymbolSize:
+    获得分配内存的大小
+cudaMemcpyToSymbol:
+    用于将数据从主机内存复制到设备内存中的全局或常量变量
+```
 asyyncAPI
 ```
-此示例说明了CUDA事件在GPU计时以及CPU和GPU执行重叠时的使用情况。事件被插入到CUDA调用流中。
+说明CUDA事件在GPU计时以及CPU和GPU执行重叠时的使用情况。事件被插入到CUDA调用流中。
 由于CUDA流调用是异步的，CPU可以在GPU执行时执行计算（包括主机和设备之间的DMA内存复制）。
 CPU可以查询CUDA事件以确定GPU是否已完成任务
-
 API:
 cudaDeviceProp:
-cudaDeviceProp数据类型是针对函式cudaGetDeviceProperties定义的
-cudaGetDeviceProperties函数的功能是取得支持GPU计算装置的相关属性，
-比如支持CUDA版本号装置的名称、内存的大小、最大的thread数目、执行单元的频率等
-
+    cudaDeviceProp数据类型是针对函式cudaGetDeviceProperties定义的
+    cudaGetDeviceProperties函数的功能是取得支持GPU计算装置的相关属性，
+    比如支持CUDA版本号装置的名称、内存的大小、最大的thread数目、执行单元的频率等
+cudaMallocHost:
+    用于分配大小为 size 字节的主机内存，该内存是页锁定的，可以被设备访问
 ```
 
