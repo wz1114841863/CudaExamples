@@ -9,6 +9,9 @@
 // #include "malloc3D.cu"
 // #include "cudaMemory.cu"
 // #include "asyncAPI.cu"
+// #include "c++11_cuda.cu"
+#include "clock.cu"
+
 
 int main(int argc, char **argv) {
     // helloWorldMain();
@@ -22,7 +25,7 @@ int main(int argc, char **argv) {
     // malloc3DMain();
     // cudaMemoryMain();
     // asyncAPImain(argc, argv);
-
-
+    // cpp11CudaMain(argc, argv);
+    clockMain(argc, argv);
     return 0;
 }

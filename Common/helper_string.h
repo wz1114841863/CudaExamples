@@ -90,7 +90,7 @@ inline int getFileExtension(char *filename, char **extension) {
     if (string_length > 0) string_length += 2;
 
     if (string_length == 0)
-        *extension = NULL;
+        *extension = nullptr;
     else
         *extension = &filename[string_length];
 
@@ -234,7 +234,7 @@ inline bool getCmdLineArgumentString(const int argc, const char **argv,
     }
 
     if (!bFound) {
-        *string_retval = NULL;
+        *string_retval = nullptr;
     }
 
     return bFound;
@@ -379,7 +379,7 @@ inline char *sdkFindFilePath(const char *filename,
         FILE *fp;
         FOPEN(fp, path.c_str(), "rb");
 
-        if (fp != NULL) {
+        if (fp != nullptr) {
             fclose(fp);
             // File found
             // returning an allocated array here for backwards compatibility reasons
