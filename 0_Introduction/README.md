@@ -159,4 +159,17 @@ clock:
 API:
 这个代码主要是展示随着设定的block的增加，并不是block越多时间越快，反而超过一定的限制，会出现明显的传输拥堵，latency越来越难以隐藏。
 ```
+conCurKernels:
+```
+演示了使用CUDA流在GPU设备上并发执行几个内核。
+说明了如何使用新的cudaStreamWaitEvent函数在CUDA流之间引入依赖关系。
+API:
+cudaEventCreateWithFlags:
+   用于创建一个 CUDA 事件，并指定一些标志
+cudaStreamWaitEvent:
+   用于将一个CUDA流等待一个CUDA事件的触发
+   使用 cudaStreamWaitEvent 函数等待一个 CUDA 事件可以使得当前流在该事件触发之后才继续执行后续操作，
+   从而可以实现异步执行和流并发。使用 cudaStreamWaitEvent 函数等待的 CUDA 事件必须使用 cudaEventRecord 函数在某个 CUDA 流中记录，
+   否则会出现未定义行为。
+```
 
