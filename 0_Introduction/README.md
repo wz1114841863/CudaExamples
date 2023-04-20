@@ -172,4 +172,10 @@ cudaStreamWaitEvent:
    从而可以实现异步执行和流并发。使用 cudaStreamWaitEvent 函数等待的 CUDA 事件必须使用 cudaEventRecord 函数在某个 CUDA 流中记录，
    否则会出现未定义行为。
 ```
+UnifiedMemoryStreams
+```
 
+API:
+cudaDeviceSynchronize():
+    
+```
